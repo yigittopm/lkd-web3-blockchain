@@ -18,7 +18,7 @@ func main() {
 	tx1 := NewTransaction("Alice", "Bob", 100)
 	tx2 := NewTransaction("Mert", "Ali", 3)
 	tx3 := NewTransaction("Anıl", "Cenk", 10)
-	tx4 := NewTransaction("Mert", "Mert", 203)
+	tx4 := NewTransaction("Mert", "Mert", 2013)
 
 	// Create a new block
 	block := NewBlock()
@@ -34,6 +34,13 @@ func main() {
 
 	// Append the block to the blockchain
 	blockchain.Blockchain = append(blockchain.Blockchain, minedBlock)
+
+	// Create a new block2
+	// block2 := NewBlock()
+	// tx5 := NewTransaction("Mert", "Ali", 3)
+	// block2.AddTransaction(tx5)
+	// minedBlock2 := block2.MineBlock(blockchain)
+	// blockchain.Blockchain = append(blockchain.Blockchain, minedBlock2)
 
 	// Print the blockchain
 	Log(blockchain)
