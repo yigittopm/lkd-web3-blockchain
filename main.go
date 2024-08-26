@@ -21,7 +21,7 @@ func main() {
 	tx4 := NewTransaction("Mert", "Mert", 203)
 
 	// Create a new block
-	block := NewBlock(blockchain.Blockchain[len(blockchain.Blockchain)-1])
+	block := NewBlock()
 
 	// Add transactions to the block
 	block.AddTransaction(tx1)
@@ -29,8 +29,11 @@ func main() {
 	block.AddTransaction(tx3)
 	block.AddTransaction(tx4)
 
+	// Mine the block
+	minedBlock := block.MineBlock(blockchain)
+
 	// Append the block to the blockchain
-	blockchain.Blockchain = append(blockchain.Blockchain, block)
+	blockchain.Blockchain = append(blockchain.Blockchain, minedBlock)
 
 	// Print the blockchain
 	Log(blockchain)
