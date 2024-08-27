@@ -5,12 +5,19 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
 var (
-	Difficulty = 4
+	Difficulty          = 3
+	MaxTransactionCount = 3
 )
+
+type Mempool struct {
+	mu           sync.Mutex
+	Transactions []Transaction
+}
 
 type Blockchain struct {
 	Blockchain []*Block
@@ -33,59 +40,78 @@ type Transaction struct {
 	Amount int
 }
 
-type GenerateHashPayload struct {
-	PrevHash     string
-	Timestamp    time.Time
-	Transactions []Transaction
+func (m *Mempool) GetTransaction() *Transaction {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	tx := m.Transactions[0]
+	m.Transactions = m.Transactions[1:]
+
+	return &tx
 }
 
-func (b *Block) AddTransaction(tx Transaction) {
-	b.Transactions = append(b.Transactions, tx)
-}
+func Mine(blockchain *Blockchain, mem *Mempool) {
+	var wg sync.WaitGroup
+	txList := []Transaction{}
 
-func (b *Block) Mine(blockchain *Blockchain) *Block {
+	for i := range len(mem.Transactions) {
+		if i > MaxTransactionCount-1 {
+			break
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			txList = append(txList, *mem.GetTransaction())
+		}()
+	}
+	wg.Wait()
+
 	prevBlock := blockchain.Blockchain[len(blockchain.Blockchain)-1]
-	hash, nonce := GenerateHash(b.Transactions, prevBlock.Hash, time.Now())
+	hash, nonce := GenerateHash(txList, prevBlock.Hash, time.Now())
 
-	return &Block{
+	minedBlock := &Block{
 		Id:           prevBlock.Id + 1,
 		Hash:         hash,
 		PrevHash:     prevBlock.Hash,
 		Nonce:        nonce,
 		Timestamp:    time.Now(),
-		Transactions: b.Transactions,
+		Transactions: txList,
 	}
+
+	blockchain.Blockchain = append(blockchain.Blockchain, minedBlock)
 }
 
-func (b *Block) MineGenesisBlock() *Block {
-	hash, nonce := GenerateHash([]Transaction{}, "0000000000000000000000000000000000000000000000000000000000000000", time.Now())
+func MineGenesisBlock() *Block {
+	initHash := "0000000000000000000000000000000000000000000000000000000000000000"
+	hash, nonce := GenerateHash([]Transaction{}, initHash, time.Now())
 
 	return &Block{
 		Id:           0,
 		Hash:         hash,
-		PrevHash:     "0000000000000000000000000000000000000000000000000000000000000000",
+		PrevHash:     initHash,
 		Nonce:        nonce,
 		Timestamp:    time.Now(),
 		Transactions: []Transaction{},
 	}
 }
 
-func NewTransaction(from, to Address, amount int) Transaction {
-	return Transaction{
+func NewMempool() *Mempool {
+	return &Mempool{}
+}
+
+func NewTransaction(mem *Mempool, from, to Address, amount int) {
+	tx := Transaction{
 		From:   from,
 		To:     to,
 		Amount: amount,
 	}
-}
 
-func NewBlock() *Block {
-	return &Block{}
+	mem.Transactions = append(mem.Transactions, tx)
 }
 
 func NewBlockchain() *Blockchain {
 	bc := &Blockchain{}
-	block := NewBlock()
-	genesis := block.MineGenesisBlock()
+	genesis := MineGenesisBlock()
 
 	bc.Blockchain = append(bc.Blockchain, genesis)
 	return bc
