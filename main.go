@@ -30,7 +30,7 @@ func main() {
 	block.AddTransaction(tx4)
 
 	// Mine the block
-	minedBlock := block.MineBlock(blockchain)
+	minedBlock := block.Mine(blockchain)
 
 	// Append the block to the blockchain
 	blockchain.Blockchain = append(blockchain.Blockchain, minedBlock)

@@ -43,7 +43,7 @@ func (b *Block) AddTransaction(tx Transaction) {
 	b.Transactions = append(b.Transactions, tx)
 }
 
-func (b *Block) MineBlock(blockchain *Blockchain) *Block {
+func (b *Block) Mine(blockchain *Blockchain) *Block {
 	prevBlock := blockchain.Blockchain[len(blockchain.Blockchain)-1]
 	hash, nonce := GenerateHash(b.Transactions, prevBlock.Hash, time.Now())
 

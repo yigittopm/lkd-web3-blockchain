@@ -33,7 +33,7 @@ func TestMineBlock(t *testing.T) {
 	block.AddTransaction(tx2)
 	block.AddTransaction(tx3)
 	block.AddTransaction(tx4)
-	minedBlock := block.MineBlock(blockchain)
+	minedBlock := block.Mine(blockchain)
 	blockchain.Blockchain = append(blockchain.Blockchain, minedBlock)
 
 	if len(blockchain.Blockchain) != 2 {
